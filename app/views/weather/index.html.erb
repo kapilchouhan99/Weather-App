@@ -1,0 +1,68 @@
+<html>
+<head>
+  <title>Weather App</title>
+    <style>
+    body {
+      background: <%= @background_gradient %>;
+      transition: background 0.5s ease;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .weather{
+      background: linear-gradient(to right, #c0ede4, #ffffff);
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="<%= 'weather' unless @background_gradient.present? %>" style="margin:0; background: <%= @background_gradient if @background_gradient.present? %>;">
+  <div class="container ">
+    <div>
+      <div class="input_box">
+        <%= form_with url: weather_fetch_path, method: :post do %>
+          <div class="form">
+            <%= inline_svg_tag "svg/weather.svg", class: "image" %>
+						<select name="country" class="input_country">
+							<% @countries.each do |country| %>
+								<option value="<%= country[:code] %>" <%= 'selected' if params[:country] == country[:code] %>>
+									<%= "#{country[:flag]} #{country[:code]} (#{country[:name]})" %>
+								</option>
+							<% end %>
+						</select>	
+            <div class="input_city_box">
+              <%= text_field_tag :city, params[:city], placeholder: "Please enter your location...", class:"input_city" %>
+              <button type="submit" class="search-icon">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="result">
+        <% if @avg_temp %>    
+          <% start_date = Date.parse(@daily_forecasts.first['valid_date']) %>
+          <% end_date = Date.parse(@daily_forecasts.last['valid_date']) %>
+  				<div class="weather_detail">
+          	<span class="day"><%= "#{start_date.strftime("%B %d").upcase} - #{end_date.strftime("%d %Y")}" %></span>
+            <div class="temp"><span><%= @daily_forecasts.first['temp'] %></span><span class="current_day_degree">°C</span></div>
+						<div class="days_box">
+							<% @daily_forecasts.each do |forecast| %>
+								<div>
+									<span class="day"><%= Date::DAYNAMES[Date.parse(forecast['valid_date']).wday].upcase %></span>
+									<div class="days_temp"><span><%= forecast['temp'] %></span><span class="degree">°C</span></div>
+								</div>
+							<% end %>
+						</div>
+  				</div>
+        <% end %>
+      </div>
+    </div>
+    <% if flash[:error] %>
+      <div class="error"><%= flash[:error] %></div>
+    <% end %>
+  </div>
+</body>
+</html>
